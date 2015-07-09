@@ -19,15 +19,21 @@ def backup_files(ftp, path, files):
 
 
 if __name__ == "__main__":
+    import argparse
     import sys
     from ftplib import FTP
 
-    src_path, dst_path = sys.argv[2], sys.argv[3]
-    ip, port = sys.argv[1].split(':')
+    parser = argparse.ArgumentParser(description='Sync a remote FTP server to local storage')
+    parser.add_argument('ip', type=str, help='IPv4 address of remote FTP server')
+    parser.add_argument('--port', type=int, help='port number of remote FTP server (default=21)', default=21)
+    parser.add_argument('src_path', type=str, help='source path on remote FTP server')
+    parser.add_argument('dst_path', type=str, help='local path to save remotely downloaded files')
+    args = parser.parse_args()
+
     ftp = FTP()
-    ftp.connect(ip, int(port))
+    ftp.connect(args.ip, args.port)
     ftp.login()
-    ftp.cwd(src_path)
+    ftp.cwd(args.src_path)
     files = ftp.nlst()
-    new = backup_files(ftp, dst_path, files)
+    new = backup_files(ftp, args.dst_path, files)
     print 'Backup Complete\nNew: %d\nOld: %d' % (new, len(files) - new)
